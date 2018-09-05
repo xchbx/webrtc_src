@@ -21,6 +21,7 @@ static const uint16_t kNetworkCostUnknown = 50;
 static const uint16_t kNetworkCostLow = 10;
 static const uint16_t kNetworkCostMin = 0;
 
+// 网络类型
 enum AdapterType {
   // This enum resembles the one in Chromium net::ConnectionType.
   ADAPTER_TYPE_UNKNOWN = 0,

@@ -10,6 +10,8 @@
 
 #include "rtc_base/network.h"
 
+#define WEBRTC_WIN  1 // add by frank 
+
 #if defined(WEBRTC_POSIX)
 // linux/if.h can't be included at the same time as the posix sys/if.h, and
 // it's transitively required by linux/route.h, so include that version on
@@ -257,23 +259,28 @@ void NetworkManagerBase::MergeNetworkList(const NetworkList& new_networks,
   // with the same key.
   std::map<std::string, AddressList> consolidated_address_list;
   NetworkList list(new_networks);
+  // 排序
   std::sort(list.begin(), list.end(), CompareNetworks);
   // First, build a set of network-keys to the ipaddresses.
   for (Network* network : list) {
     bool might_add_to_merged_list = false;
+    // 生成key
     std::string key = MakeNetworkKey(network->name(),
                                      network->prefix(),
                                      network->prefix_length());
     if (consolidated_address_list.find(key) ==
         consolidated_address_list.end()) {
+      // 全新的就加入到consolidated_address_list
       AddressList addrlist;
       addrlist.net = network;
       consolidated_address_list[key] = addrlist;
       might_add_to_merged_list = true;
     }
+    // 获取全部的ip信息
     const std::vector<InterfaceAddress>& addresses = network->GetIPs();
     AddressList& current_list = consolidated_address_list[key];
     for (const InterfaceAddress& address : addresses) {
+      // 写入ip信息
       current_list.ips.push_back(address);
     }
     if (!might_add_to_merged_list) {
@@ -416,6 +423,7 @@ BasicNetworkManager::BasicNetworkManager()
 BasicNetworkManager::~BasicNetworkManager() {
 }
 
+// 通知网络变化
 void BasicNetworkManager::OnNetworksChanged() {
   RTC_LOG(LS_INFO) << "Network change was observed";
   UpdateNetworksOnce();
@@ -788,6 +796,7 @@ void BasicNetworkManager::StartNetworkMonitor() {
     if (!network_monitor_) {
       return;
     }
+    // 事件绑定
     network_monitor_->SignalNetworksChanged.connect(
         this, &BasicNetworkManager::OnNetworksChanged);
   }
@@ -804,10 +813,12 @@ void BasicNetworkManager::StopNetworkMonitor() {
 void BasicNetworkManager::OnMessage(Message* msg) {
   switch (msg->message_id) {
     case kUpdateNetworksMessage: {
+      // 触发事件
       UpdateNetworksContinually();
       break;
     }
     case kSignalNetworksMessage:  {
+      // 触发事件
       SignalNetworksChanged();
       break;
     }

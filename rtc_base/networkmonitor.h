@@ -20,6 +20,7 @@ namespace rtc {
 
 class IPAddress;
 
+// 网络绑定结果
 enum class NetworkBindingResult {
   SUCCESS = 0,   // No error
   FAILURE = -1,  // Generic error
@@ -28,6 +29,7 @@ enum class NetworkBindingResult {
   NETWORK_CHANGED = -4
 };
 
+// 接口定义
 class NetworkBinderInterface {
  public:
   // Binds a socket to the network that is attached to |address| so that all
@@ -37,6 +39,7 @@ class NetworkBinderInterface {
   virtual NetworkBindingResult BindSocketToNetwork(
       int socket_fd,
       const IPAddress& address) = 0;
+
   virtual ~NetworkBinderInterface() {}
 };
 
@@ -64,6 +67,7 @@ class NetworkMonitorInterface {
   NetworkMonitorInterface();
   virtual ~NetworkMonitorInterface();
 
+  // 网络变化事件
   sigslot::signal0<> SignalNetworksChanged;
 
   virtual void Start() = 0;
@@ -71,11 +75,14 @@ class NetworkMonitorInterface {
 
   // Implementations should call this method on the base when networks change,
   // and the base will fire SignalNetworksChanged on the right thread.
+  // 通知网络事件变化事件
   virtual void OnNetworksChanged() = 0;
 
+  // 根据网卡名字获取网络类型
   virtual AdapterType GetAdapterType(const std::string& interface_name) = 0;
 };
 
+// NetworkMonitorInterface具体实现
 class NetworkMonitorBase : public NetworkMonitorInterface,
                            public MessageHandler,
                            public sigslot::has_slots<> {
@@ -96,6 +103,7 @@ class NetworkMonitorBase : public NetworkMonitorInterface,
 
 /*
  * NetworkMonitorFactory creates NetworkMonitors.
+ * NetworkMonitor工厂创建相应的NetworkMonitor
  */
 class NetworkMonitorFactory {
  public:

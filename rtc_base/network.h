@@ -52,12 +52,14 @@ std::string MakeNetworkKey(const std::string& name, const IPAddress& prefix,
 // mechanisms fail to determine the type.
 AdapterType GetAdapterTypeFromName(const char* network_name);
 
+// 获取本地地址？
 class DefaultLocalAddressProvider {
  public:
   virtual ~DefaultLocalAddressProvider() = default;
   // The default local address is the local address used in multi-homed endpoint
   // when the any address (0.0.0.0 or ::) is used as the local address. It's
   // important to check the return value as a IP family may not be enabled.
+  // 需要判断返回值，功能是否支持
   virtual bool GetDefaultLocalAddress(int family, IPAddress* ipaddr) const = 0;
 };
 
@@ -69,6 +71,7 @@ class DefaultLocalAddressProvider {
 //
 // This allows constructing a NetworkManager subclass on one thread and
 // passing it into an object that uses it on a different thread.
+// 接口对象，具体实现为NetworkManagerBase
 class NetworkManager : public DefaultLocalAddressProvider {
  public:
   typedef std::vector<Network*> NetworkList;
@@ -86,10 +89,10 @@ class NetworkManager : public DefaultLocalAddressProvider {
   ~NetworkManager() override;
 
   // Called when network list is updated.
-  sigslot::signal0<> SignalNetworksChanged;
+  sigslot::signal0<> SignalNetworksChanged;   // NetworkList更新 的触发事件
 
   // Indicates a failure when getting list of network interfaces.
-  sigslot::signal0<> SignalError;
+  sigslot::signal0<> SignalError;             // 错误事件
 
   // This should be called on the NetworkManager's thread before the
   // NetworkManager is used. Subclasses may override this if necessary.
@@ -143,7 +146,9 @@ class NetworkManagerBase : public NetworkManager {
   NetworkManagerBase();
   ~NetworkManagerBase() override;
 
+  // 获取内部的NetworkList内容
   void GetNetworks(NetworkList* networks) const override;
+  // INADDR_ANY表示的是一个服务器上所有的网卡,支持ipv4和ipv6
   void GetAnyAddressNetworks(NetworkList* networks) override;
 
   // Defaults to true.
@@ -154,6 +159,7 @@ class NetworkManagerBase : public NetworkManager {
 
   EnumerationPermission enumeration_permission() const override;
 
+  // 返回默认的ipv4和ipv6地址
   bool GetDefaultLocalAddress(int family, IPAddress* ipaddr) const override;
 
  protected:
@@ -163,6 +169,7 @@ class NetworkManagerBase : public NetworkManager {
   // in the |list| then it is reused. Accept ownership of the Network
   // objects in the |list|. |changed| will be set to true if there is
   // any change in the network list.
+  // 合并NetworkList结果，判断是否有变化
   void MergeNetworkList(const NetworkList& list, bool* changed);
 
   // |stats| will be populated even if |*changed| is false.
@@ -174,6 +181,7 @@ class NetworkManagerBase : public NetworkManager {
     enumeration_permission_ = state;
   }
 
+  // 设置默认的ipv4和ipv6地址
   void set_default_local_addresses(const IPAddress& ipv4,
                                    const IPAddress& ipv6);
 
@@ -182,15 +190,15 @@ class NetworkManagerBase : public NetworkManager {
 
   Network* GetNetworkFromAddress(const rtc::IPAddress& ip) const;
 
-  EnumerationPermission enumeration_permission_;
+  EnumerationPermission enumeration_permission_; // 默认为ENUMERATION_ALLOWED
 
-  NetworkList networks_;
+  NetworkList networks_;        
 
-  NetworkMap networks_map_;
-  bool ipv6_enabled_;
+  NetworkMap networks_map_; 
+  bool ipv6_enabled_;           // 是否支持ipv6, 默认支持
 
-  std::unique_ptr<rtc::Network> ipv4_any_address_network_;
-  std::unique_ptr<rtc::Network> ipv6_any_address_network_;
+  std::unique_ptr<rtc::Network> ipv4_any_address_network_;  // 全部的ipv4地址
+  std::unique_ptr<rtc::Network> ipv6_any_address_network_;  // 全部的ipv6地址
 
   IPAddress default_local_ipv4_address_;
   IPAddress default_local_ipv6_address_;
@@ -215,6 +223,7 @@ class BasicNetworkManager : public NetworkManagerBase,
   void DumpNetworks() override;
 
   // MessageHandler interface.
+  // 处理消息
   void OnMessage(Message* msg) override;
   bool started() { return start_count_ > 0; }
 
@@ -242,6 +251,7 @@ class BasicNetworkManager : public NetworkManagerBase,
 #endif  // defined(WEBRTC_POSIX)
 
   // Creates a network object for each network available on the machine.
+  // 根据本机全部可用的网卡信息创建Network结构加入到NetworkList
   bool CreateNetworks(bool include_ignored, NetworkList* networks) const;
 
   // Determines if a network should be ignored. This should only be determined
@@ -273,7 +283,7 @@ class BasicNetworkManager : public NetworkManagerBase,
   int start_count_;
   std::vector<std::string> network_ignore_list_;
   bool ignore_non_default_routes_;
-  std::unique_ptr<NetworkMonitorInterface> network_monitor_;
+  std::unique_ptr<NetworkMonitorInterface> network_monitor_; // 监控网络变化
 };
 
 // Represents a Unix-type network interface, with a name and single address.
