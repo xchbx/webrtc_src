@@ -37,6 +37,7 @@ namespace webrtc {
 //
 // The wrapper is intended to be constructed by specialized factory methods on
 // a test fixture class then used as a local variable in each test case.
+// 简化PeerConnection的使用
 class PeerConnectionWrapper {
  public:
   // Constructs a PeerConnectionWrapper from the given PeerConnection.

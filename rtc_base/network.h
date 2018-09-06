@@ -39,7 +39,7 @@ class NetworkMonitorInterface;
 class Thread;
 
 // By default, ignore loopback interfaces on the host.
-const int kDefaultNetworkIgnoreMask = ADAPTER_TYPE_LOOPBACK;
+const int kDefaultNetworkIgnoreMask = ADAPTER_TYPE_LOOPBACK;  //  默认忽略loopback interfaces
 
 // Makes a string key for this network. Used in the network manager's maps.
 // Network objects are keyed on interface name, network prefix and the
@@ -271,6 +271,7 @@ class BasicNetworkManager : public NetworkManagerBase,
   // Stops and removes the network monitor.
   void StopNetworkMonitor();
   // Called when it receives updates from the network monitor.
+  // 网络变化的时候通知
   void OnNetworksChanged();
 
   // Updates the networks and reschedules the next update.

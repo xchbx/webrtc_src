@@ -31,6 +31,8 @@ class IceMessage;
 class StunMessage;
 class StunStats;
 
+
+// 协议类型
 enum ProtocolType {
   PROTO_UDP,
   PROTO_TCP,
@@ -42,6 +44,7 @@ enum ProtocolType {
 // Defines the interface for a port, which represents a local communication
 // mechanism that can be used to create connections to similar mechanisms of
 // the other client. Various types of ports will implement this interface.
+// Port接口
 class PortInterface {
  public:
   virtual ~PortInterface();

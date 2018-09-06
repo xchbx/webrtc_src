@@ -28,6 +28,7 @@ struct PacketOptions;
 struct PacketTime;
 struct SentPacket;
 
+// 虚拟继承https://www.cnblogs.com/BeyondAnyTime/archive/2012/06/05/2537451.html
 class PacketTransportInternal : public virtual webrtc::PacketTransportInterface,
                                 public sigslot::has_slots<> {
  public:

@@ -35,7 +35,6 @@ namespace cricket {
 //
 // Clients can override this class to control port allocation, including
 // what kinds of ports are allocated.
-
 enum {
   // Disable local UDP ports. This doesn't impact how we connect to relay
   // servers.
@@ -187,6 +186,7 @@ struct RelayServerConfig {
   std::vector<std::string> tls_elliptic_curves;
 };
 
+// 
 class PortAllocatorSession : public sigslot::has_slots<> {
  public:
   // Content name passed in mostly for logging and debugging.
@@ -331,6 +331,7 @@ class PortAllocatorSession : public sigslot::has_slots<> {
 //
 // This allows constructing a PortAllocator subclass on one thread and
 // passing it into an object that uses it on a different thread.
+// 保存各种配置，管理 PortAllocatorSession
 class PortAllocator : public sigslot::has_slots<> {
  public:
   PortAllocator();
@@ -503,13 +504,13 @@ class PortAllocator : public sigslot::has_slots<> {
     return pooled_sessions_;
   }
 
-  uint32_t flags_;
+  uint32_t flags_;            // PORTALLOCATOR_DISABLE_UDP等标记的组合
   std::string agent_;
   rtc::ProxyInfo proxy_;
   int min_port_;
   int max_port_;
   int max_ipv6_networks_;
-  uint32_t step_delay_;
+  uint32_t step_delay_;       // 什么的延时？
   bool allow_tcp_listen_;
   uint32_t candidate_filter_;
   std::string origin_;

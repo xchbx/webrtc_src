@@ -80,6 +80,7 @@ struct RtpTransportParameters final {
 // Note that Edge's implementation of ORTC provides a similar API point, called
 // RTCSrtpSdesTransport:
 // https://msdn.microsoft.com/en-us/library/mt502527(v=vs.85).aspx
+// 提供了收发 RTP, RTCP 包的接口，其内部包了两个实际收发 RTP 和 RTCP 数据的 PacketTransportInternal (DtlsTransport)；
 class RtpTransportInterface {
  public:
   virtual ~RtpTransportInterface() {}

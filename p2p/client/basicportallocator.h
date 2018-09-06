@@ -26,6 +26,7 @@
 
 namespace cricket {
 
+// 管理 PortAllocatorSession
 class BasicPortAllocator : public PortAllocator {
  public:
   // note: The (optional) relay_port_factory is owned by caller
@@ -77,7 +78,7 @@ class BasicPortAllocator : public PortAllocator {
   // This function makes sure that relay_port_factory_ is set properly.
   void InitRelayPortFactory(RelayPortFactoryInterface* relay_port_factory);
 
-  rtc::NetworkManager* network_manager_;
+  rtc::NetworkManager* network_manager_;          
   rtc::PacketSocketFactory* socket_factory_;
   bool allow_tcp_listen_;
   int network_ignore_mask_ = rtc::kDefaultNetworkIgnoreMask;
@@ -307,6 +308,7 @@ class TurnPort;
 
 // Performs the allocation of ports, in a sequenced (timed) manner, for a given
 // network and IP address.
+// 负责对单个网络设备（Network 对象）分配 port，分阶段进行；
 class AllocationSequence : public rtc::MessageHandler,
                            public sigslot::has_slots<> {
  public:

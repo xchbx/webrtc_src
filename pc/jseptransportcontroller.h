@@ -41,6 +41,7 @@ class PacketTransportInternal;
 
 namespace webrtc {
 
+// JsepTransportController 管理 transport 的辅助类，sdp 里每个 m line 都对应于一个数据流（音频、视频、应用数据），每个数据流都需要一个 transport
 class JsepTransportController : public sigslot::has_slots<>,
                                 public rtc::MessageHandler {
  public:
@@ -142,18 +143,18 @@ class JsepTransportController : public sigslot::has_slots<>,
   // Else if all completed => completed,
   // Else if all connected => connected,
   // Else => connecting
-  sigslot::signal1<cricket::IceConnectionState> SignalIceConnectionState;
+  sigslot::signal1<cricket::IceConnectionState> SignalIceConnectionState;     // IceConnectionState事件
 
   // If all transports done gathering => complete,
   // Else if any are gathering => gathering,
   // Else => new
-  sigslot::signal1<cricket::IceGatheringState> SignalIceGatheringState;
+  sigslot::signal1<cricket::IceGatheringState> SignalIceGatheringState;      // IceGatheringState事件
 
   // (mid, candidates)
-  sigslot::signal2<const std::string&, const std::vector<cricket::Candidate>&>
+  sigslot::signal2<const std::string&, const std::vector<cricket::Candidate>&> // IceCandidatesGathered事件
       SignalIceCandidatesGathered;
 
-  sigslot::signal1<const std::vector<cricket::Candidate>&>
+  sigslot::signal1<const std::vector<cricket::Candidate>&>                     // IceCandidatesRemoved事件
       SignalIceCandidatesRemoved;
 
   sigslot::signal1<rtc::SSLHandshakeError> SignalDtlsHandshakeError;
@@ -163,12 +164,12 @@ class JsepTransportController : public sigslot::has_slots<>,
   // The first argument is the MID and the second is the new RtpTransport.
   // Before firing this signal, the previous RtpTransport must no longer be
   // referenced.
-  sigslot::signal2<const std::string&, RtpTransportInternal*>
+  sigslot::signal2<const std::string&, RtpTransportInternal*>                   // RtpTransportChanged事件
       SignalRtpTransportChanged;
 
   // SCTP version of the signal above. PeerConnection will set a new
   // DtlsTransport for the SctpTransport.
-  sigslot::signal2<const std::string&, cricket::DtlsTransportInternal*>
+  sigslot::signal2<const std::string&, cricket::DtlsTransportInternal*>         // DtlsTransportChanged事件
       SignalDtlsTransportChanged;
 
  private:

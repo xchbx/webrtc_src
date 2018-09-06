@@ -161,6 +161,7 @@ typedef std::vector<ConnectionInfo> ConnectionInfos;
 const char* ProtoToString(ProtocolType proto);
 bool StringToProto(const char* value, ProtocolType* proto);
 
+// 存储协议地址和协议类型
 struct ProtocolAddress {
   rtc::SocketAddress address;
   ProtocolType proto;
@@ -179,6 +180,7 @@ typedef std::set<rtc::SocketAddress> ServerAddresses;
 // Represents a local communication mechanism that can be used to create
 // connections to similar mechanisms of the other client.  Subclasses of this
 // one add support for specific mechanisms like local UDP ports.
+// Port代表的是一种通讯机制的本地实例，它可以和远端的类似实例一起实现数据通讯；
 class Port : public PortInterface, public rtc::MessageHandler,
              public sigslot::has_slots<> {
  public:
@@ -498,6 +500,7 @@ class Port : public PortInterface, public rtc::MessageHandler,
 
 // Represents a communication link between a port on the local client and a
 // port on the remote client.
+// Connection: 代表的是一个 local port 和一个 remote port 的通讯链接；
 class Connection : public CandidatePairInterface,
                    public rtc::MessageHandler,
                    public sigslot::has_slots<> {

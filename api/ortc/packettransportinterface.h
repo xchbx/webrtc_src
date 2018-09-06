@@ -20,6 +20,7 @@ class PacketTransportInternal;
 namespace webrtc {
 
 // Base class for different packet-based transports.
+// 基于包的传输的类接口
 class PacketTransportInterface {
  public:
   virtual ~PacketTransportInterface() {}

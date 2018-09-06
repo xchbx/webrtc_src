@@ -244,6 +244,8 @@ BasicPortAllocatorSession::BasicPortAllocatorSession(
       network_manager_started_(false),
       allocation_sequences_created_(false),
       prune_turn_ports_(allocator->prune_turn_ports()) {
+
+  // 网络变化的时候调用BasicPortAllocatorSession::OnNetworksChangedOnNetworksChanged
   allocator_->network_manager()->SignalNetworksChanged.connect(
       this, &BasicPortAllocatorSession::OnNetworksChanged);
   allocator_->network_manager()->StartUpdating();
@@ -611,7 +613,6 @@ void BasicPortAllocatorSession::AllocatePorts() {
   RTC_DCHECK(rtc::Thread::Current() == network_thread_);
   network_thread_->Post(RTC_FROM_HERE, this, MSG_ALLOCATE);
 }
-
 void BasicPortAllocatorSession::OnAllocate() {
   if (network_manager_started_ && !IsStopped()) {
     bool disable_equivalent_phases = true;
@@ -707,6 +708,7 @@ std::vector<rtc::Network*> BasicPortAllocatorSession::GetNetworks() {
 
 // For each network, see if we have a sequence that covers it already.  If not,
 // create a new sequence to create the appropriate ports.
+// DoAllocate 里会遍历所有网络设备（Network 对象），创建 AllocationSequence 对象，调用其 Init Start 函数，分配 port
 void BasicPortAllocatorSession::DoAllocate(bool disable_equivalent) {
   bool done_signal_needed = false;
   std::vector<rtc::Network*> networks = GetNetworks();
@@ -770,7 +772,9 @@ void BasicPortAllocatorSession::DoAllocate(bool disable_equivalent) {
   }
 }
 
+// 
 void BasicPortAllocatorSession::OnNetworksChanged() {
+  // 获取Networks信息
   std::vector<rtc::Network*> networks = GetNetworks();
   std::vector<rtc::Network*> failed_networks;
   for (AllocationSequence* sequence : sequences_) {
@@ -796,6 +800,7 @@ void BasicPortAllocatorSession::OnNetworksChanged() {
       SignalIceRegathering(this, IceRegatheringReason::NETWORK_CHANGE);
     }
     bool disable_equivalent_phases = true;
+    // 开始创建获取ICE Candidate 
     DoAllocate(disable_equivalent_phases);
   }
 

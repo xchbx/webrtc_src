@@ -882,7 +882,7 @@ void PeerConnection::DestroyAllChannels() {
 
 bool PeerConnection::Initialize(
     const PeerConnectionInterface::RTCConfiguration& configuration,
-    std::unique_ptr<cricket::PortAllocator> allocator,
+    std::unique_ptr<cricket::PortAllocator> allocator,      // p2p 
     std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
     PeerConnectionObserver* observer) {
   TRACE_EVENT0("webrtc", "PeerConnection::Initialize");
@@ -935,8 +935,10 @@ bool PeerConnection::Initialize(
 #if defined(ENABLE_EXTERNAL_AUTH)
   config.enable_external_auth = true;
 #endif
+  // 
   transport_controller_.reset(new JsepTransportController(
       signaling_thread(), network_thread(), port_allocator_.get(), config));
+  // 事件绑定     
   transport_controller_->SignalIceConnectionState.connect(
       this, &PeerConnection::OnTransportControllerConnectionState);
   transport_controller_->SignalIceGatheringState.connect(
@@ -4597,6 +4599,7 @@ DataChannel* PeerConnection::FindDataChannelBySid(int sid) const {
 
 bool PeerConnection::InitializePortAllocator_n(
     const RTCConfiguration& configuration) {
+
   cricket::ServerAddresses stun_servers;
   std::vector<cricket::RelayServerConfig> turn_servers;
   if (ParseIceServers(configuration.servers, &stun_servers, &turn_servers) !=
@@ -4604,49 +4607,55 @@ bool PeerConnection::InitializePortAllocator_n(
     return false;
   }
 
+  // PortAllocator::Initialize  空实现
   port_allocator_->Initialize();
 
-  // To handle both internal and externally created port allocator, we will
-  // enable BUNDLE here.
+  // To handle both internal and externally created port allocator, we will enable BUNDLE here.
   int portallocator_flags = port_allocator_->flags();
   portallocator_flags |= cricket::PORTALLOCATOR_ENABLE_SHARED_SOCKET |
                          cricket::PORTALLOCATOR_ENABLE_IPV6 |
                          cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI;
   // If the disable-IPv6 flag was specified, we'll not override it
   // by experiment.
+  // 去除ipv6支持
   if (configuration.disable_ipv6) {
     portallocator_flags &= ~(cricket::PORTALLOCATOR_ENABLE_IPV6);
   } else if (webrtc::field_trial::FindFullName("WebRTC-IPv6Default")
                  .find("Disabled") == 0) {
     portallocator_flags &= ~(cricket::PORTALLOCATOR_ENABLE_IPV6);
   }
-
+  // 去除ipv6 wifi支持
   if (configuration.disable_ipv6_on_wifi) {
     portallocator_flags &= ~(cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI);
     RTC_LOG(LS_INFO) << "IPv6 candidates on Wi-Fi are disabled.";
   }
 
+  // 去除tcp形式的候选对象
   if (configuration.tcp_candidate_policy == kTcpCandidatePolicyDisabled) {
     portallocator_flags |= cricket::PORTALLOCATOR_DISABLE_TCP;
     RTC_LOG(LS_INFO) << "TCP candidates are disabled.";
   }
 
+  // Wi-Fi和蜂窝网络全部存在的情况下面，只采集wifi
   if (configuration.candidate_network_policy ==
       kCandidateNetworkPolicyLowCost) {
     portallocator_flags |= cricket::PORTALLOCATOR_DISABLE_COSTLY_NETWORKS;
     RTC_LOG(LS_INFO) << "Do not gather candidates on high-cost networks";
   }
 
+  // 去除link-local network interfaces
   if (configuration.disable_link_local_networks) {
     portallocator_flags |= cricket::PORTALLOCATOR_DISABLE_LINK_LOCAL_NETWORKS;
     RTC_LOG(LS_INFO) << "Disable candidates on link-local network interfaces.";
   }
 
+  // 设置收集策略
   port_allocator_->set_flags(portallocator_flags);
   // No step delay is used while allocating ports.
   port_allocator_->set_step_delay(cricket::kMinimumStepDelay);
   port_allocator_->set_candidate_filter(
       ConvertIceTransportTypeToCandidateFilter(configuration.type));
+
   port_allocator_->set_max_ipv6_networks(configuration.max_ipv6_networks);
 
   // Call this last since it may create pooled allocator sessions using the
@@ -4655,6 +4664,7 @@ bool PeerConnection::InitializePortAllocator_n(
       stun_servers, turn_servers, configuration.ice_candidate_pool_size,
       configuration.prune_turn_ports, configuration.turn_customizer,
       configuration.stun_candidate_keepalive_interval);
+
   return true;
 }
 

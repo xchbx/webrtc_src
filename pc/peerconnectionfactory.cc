@@ -253,7 +253,7 @@ rtc::scoped_refptr<PeerConnectionInterface>
 PeerConnectionFactory::CreatePeerConnection(
     const PeerConnectionInterface::RTCConfiguration& configuration_in,
     const MediaConstraintsInterface* constraints,
-    std::unique_ptr<cricket::PortAllocator> allocator,
+    std::unique_ptr<cricket::PortAllocator> allocator,        // p2p
     std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
     PeerConnectionObserver* observer) {
   RTC_DCHECK(signaling_thread_->IsCurrent());
@@ -269,7 +269,7 @@ PeerConnectionFactory::CreatePeerConnection(
 rtc::scoped_refptr<PeerConnectionInterface>
 PeerConnectionFactory::CreatePeerConnection(
     const PeerConnectionInterface::RTCConfiguration& configuration,
-    std::unique_ptr<cricket::PortAllocator> allocator,
+    std::unique_ptr<cricket::PortAllocator> allocator,         // p2p 
     std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
     PeerConnectionObserver* observer) {
   RTC_DCHECK(signaling_thread_->IsCurrent());
@@ -281,10 +281,13 @@ PeerConnectionFactory::CreatePeerConnection(
   }
 
   if (!allocator) {
+    // 内部构造BasicPortAllocator,处理P2P相关
     allocator.reset(new cricket::BasicPortAllocator(
         default_network_manager_.get(), default_socket_factory_.get(),
         configuration.turn_customizer));
   }
+  // 在network_thread_请求执行cricket::PortAllocator::SetNetworkIgnoreMask方法
+  // 设置默认忽略ADAPTER_TYPE_LOOPBACK
   network_thread_->Invoke<void>(
       RTC_FROM_HERE, rtc::Bind(&cricket::PortAllocator::SetNetworkIgnoreMask,
                                allocator.get(), options_.network_ignore_mask));

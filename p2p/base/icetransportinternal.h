@@ -191,6 +191,7 @@ enum IceProtocolType {
 // Once the public interface is supported,
 // (https://www.w3.org/TR/webrtc/#rtcicetransport-interface)
 // the IceTransportInterface will be split from this class.
+// 负责 ICE 相关的功能，包括：收集本地 candidate、和远端 candidate 做连通性检查、数据传输；
 class IceTransportInternal : public rtc::PacketTransportInternal {
  public:
   IceTransportInternal();

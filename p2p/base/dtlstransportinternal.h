@@ -47,6 +47,7 @@ enum PacketFlags {
 // Once the public interface is supported,
 // (https://www.w3.org/TR/webrtc/#rtcdtlstransport-interface)
 // the DtlsTransportInterface will be split from this class.
+// 负责 DTLS 相关的功能，包括：DTLS 握手、DTLS 加解密；内含一个 IceTransportInternal (P2PTransportChannel)，收发数据通过它实现；
 class DtlsTransportInternal : public rtc::PacketTransportInternal {
  public:
   ~DtlsTransportInternal() override;
