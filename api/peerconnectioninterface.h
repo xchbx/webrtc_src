@@ -173,19 +173,19 @@ class PeerConnectionInterface : public rtc::RefCountInterface {
   };
 
   enum IceGatheringState {
-    kIceGatheringNew,
-    kIceGatheringGathering,     // 收集ICE候选对象
-    kIceGatheringComplete       // 收集完成
+    kIceGatheringNew,           // 初始值
+    kIceGatheringGathering,     // PeerConnection::SetLocalDescription退出前改到此状态，表示正在收集
+    kIceGatheringComplete       // 表示所有的Channel都有了有效的对端候选地址。不等于通过了stun检查，当是relay时，只是收到了中继地址而已
   };
 
   enum IceConnectionState {
-    kIceConnectionNew,
-    kIceConnectionChecking,
-    kIceConnectionConnected,
-    kIceConnectionCompleted,
+    kIceConnectionNew,          // 初始值
+    kIceConnectionChecking,     // 对主叫，收到Answer后会进入此状态。对被叫，使用了对端的第一个候选地址后进入此状态。它们共同点是收到了对端发来的数据，证明对端是存在的。
+    kIceConnectionConnected,    // 至少一条Channel有了可用的Connection。连接状态表第一条发送就绪。
+    kIceConnectionCompleted,    // 所有Channel有可用的Connection。
     kIceConnectionFailed,
     kIceConnectionDisconnected,
-    kIceConnectionClosed,
+    kIceConnectionClosed,       // 关闭了会话。
     kIceConnectionMax,
   };
 

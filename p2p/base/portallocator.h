@@ -116,9 +116,9 @@ constexpr int kDefaultMaxIPv6Networks = 5;
 // CF = CANDIDATE FILTER
 enum : uint32_t {
   CF_NONE = 0x0,
-  CF_HOST = 0x1,
+  CF_HOST = 0x1,          // 主机候选项
   CF_REFLEXIVE = 0x2,
-  CF_RELAY = 0x4,
+  CF_RELAY = 0x4,         // 中继候选项
   CF_ALL = 0x7,
 };
 

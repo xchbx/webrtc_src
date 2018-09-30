@@ -72,6 +72,8 @@ class RemoteCandidate : public Candidate {
 
 // P2PTransportChannel manages the candidates and connection process to keep
 // two P2P clients connected to each other.
+// P2PTransportChannel会维护连接状态表，并排序表中记录（SortConnectionsAndUpdateState）。
+// 排序指的是计算每条记录的连接“成本”，把成本最低的排在第一条。
 class P2PTransportChannel : public IceTransportInternal,
                             public rtc::MessageHandler {
  public:

@@ -102,10 +102,13 @@ BasicPortAllocator::BasicPortAllocator(
     webrtc::TurnCustomizer* customizer,
     RelayPortFactoryInterface* relay_port_factory)
     : network_manager_(network_manager), socket_factory_(socket_factory) {
+ 
   InitRelayPortFactory(relay_port_factory);
+
   RTC_DCHECK(relay_port_factory_ != nullptr);
   RTC_DCHECK(network_manager_ != nullptr);
   RTC_DCHECK(socket_factory_ != nullptr);
+
   SetConfiguration(ServerAddresses(), std::vector<RelayServerConfig>(),
                    0, false, customizer);
   Construct();
@@ -114,7 +117,9 @@ BasicPortAllocator::BasicPortAllocator(
 BasicPortAllocator::BasicPortAllocator(
     rtc::NetworkManager* network_manager)
     : network_manager_(network_manager), socket_factory_(nullptr) {
+      
   InitRelayPortFactory(nullptr);
+
   RTC_DCHECK(relay_port_factory_ != nullptr);
   RTC_DCHECK(network_manager_ != nullptr);
   Construct();
@@ -225,7 +230,7 @@ void BasicPortAllocator::InitRelayPortFactory(
   }
 }
 
-// BasicPortAllocatorSession
+// BasicPortAllocatorSession构造函数
 BasicPortAllocatorSession::BasicPortAllocatorSession(
     BasicPortAllocator* allocator,
     const std::string& content_name,
@@ -708,7 +713,7 @@ std::vector<rtc::Network*> BasicPortAllocatorSession::GetNetworks() {
 
 // For each network, see if we have a sequence that covers it already.  If not,
 // create a new sequence to create the appropriate ports.
-// DoAllocate 里会遍历所有网络设备（Network 对象），创建 AllocationSequence 对象，调用其 Init Start 函数，分配 port
+// DoAllocate 里会遍历所有网络设备（Network 对象），创建 AllocationSequence 对象，调用其 Init和Start 函数，分配 port
 void BasicPortAllocatorSession::DoAllocate(bool disable_equivalent) {
   bool done_signal_needed = false;
   std::vector<rtc::Network*> networks = GetNetworks();

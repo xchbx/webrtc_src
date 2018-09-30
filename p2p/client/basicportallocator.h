@@ -35,15 +35,19 @@ class BasicPortAllocator : public PortAllocator {
                      rtc::PacketSocketFactory* socket_factory,
                      webrtc::TurnCustomizer* customizer = nullptr,
                      RelayPortFactoryInterface* relay_port_factory = nullptr);
+
   explicit BasicPortAllocator(rtc::NetworkManager* network_manager);
+
   BasicPortAllocator(rtc::NetworkManager* network_manager,
                      rtc::PacketSocketFactory* socket_factory,
                      const ServerAddresses& stun_servers);
+
   BasicPortAllocator(rtc::NetworkManager* network_manager,
                      const ServerAddresses& stun_servers,
                      const rtc::SocketAddress& relay_address_udp,
                      const rtc::SocketAddress& relay_address_tcp,
                      const rtc::SocketAddress& relay_address_ssl);
+                     
   ~BasicPortAllocator() override;
 
   // Set to kDefaultNetworkIgnoreMask by default.
@@ -101,6 +105,7 @@ enum class SessionState {
               // process will be started.
 };
 
+// 遍历所有网络设备（Network 对象），分配Port；
 class BasicPortAllocatorSession : public PortAllocatorSession,
                                   public rtc::MessageHandler {
  public:
@@ -308,7 +313,7 @@ class TurnPort;
 
 // Performs the allocation of ports, in a sequenced (timed) manner, for a given
 // network and IP address.
-// 负责对单个网络设备（Network 对象）分配 port，分阶段进行；
+// 负责对单个网络设备（Network 对象）分配 Port；
 class AllocationSequence : public rtc::MessageHandler,
                            public sigslot::has_slots<> {
  public:
@@ -320,6 +325,7 @@ class AllocationSequence : public rtc::MessageHandler,
 
     // kInit --> kRunning --> {kCompleted|kStopped}
   };
+
   AllocationSequence(BasicPortAllocatorSession* session,
                      rtc::Network* network,
                      PortConfiguration* config,
