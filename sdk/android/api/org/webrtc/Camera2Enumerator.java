@@ -39,8 +39,8 @@ public class Camera2Enumerator implements CameraEnumerator {
   private static final Map<String, List<CaptureFormat>> cachedSupportedFormats =
       new HashMap<String, List<CaptureFormat>>();
 
-  final Context context;
-  @Nullable final CameraManager cameraManager;
+  final Context context;            // android.content.Context;
+  @Nullable final CameraManager cameraManager;  // android.hardware.camera2.CameraManager;
 
   public Camera2Enumerator(Context context) {
     this.context = context;

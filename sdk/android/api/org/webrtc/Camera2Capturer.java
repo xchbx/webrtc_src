@@ -16,6 +16,7 @@ import android.hardware.camera2.CameraManager;
 import android.media.MediaRecorder;
 import javax.annotation.Nullable;
 
+// CameraCapturer保护摄像头相关的操作;
 @TargetApi(21)
 public class Camera2Capturer extends CameraCapturer {
   private final Context context;

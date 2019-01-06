@@ -14,6 +14,10 @@ import org.webrtc.CameraEnumerationAndroid.CaptureFormat;
 
 import java.util.List;
 
+/*
+ * CameraEnumerator 摄像头枚举器接口,用于获取全部摄像头的名字、判断前后置
+ * 创建CameraVideoCapturer、获取支持的CaptureFormat
+ * */
 public interface CameraEnumerator {
   public String[] getDeviceNames();
   public boolean isFrontFacing(String deviceName);
