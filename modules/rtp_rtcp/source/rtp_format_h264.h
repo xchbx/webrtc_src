@@ -105,13 +105,16 @@ class RtpDepacketizerH264 : public RtpDepacketizer {
   RtpDepacketizerH264();
   ~RtpDepacketizerH264() override;
 
+  // 解析rtp包
   bool Parse(ParsedPayload* parsed_payload,
              const uint8_t* payload_data,
              size_t payload_data_length) override;
 
  private:
+  // 分片封包模式(28、29)
   bool ParseFuaNalu(RtpDepacketizer::ParsedPayload* parsed_payload,
                     const uint8_t* payload_data);
+  // 单一NAL单元模式 和 组合封包模式(24, 25, 26 以及 27)               
   bool ProcessStapAOrSingleNalu(RtpDepacketizer::ParsedPayload* parsed_payload,
                                 const uint8_t* payload_data);
 

@@ -30,9 +30,17 @@
 namespace webrtc {
 namespace {
 
+// NALU 头由一个字节组成, 它的语法如下:
+//       +---------------+
+//       |0|1|2|3|4|5|6|7|
+//       +-+-+-+-+-+-+-+-+
+//       |F|NRI|  Type   |
+//       +---------------+
 static const size_t kNalHeaderSize = 1;
+//  FU indicator  + FU header   |  
 static const size_t kFuAHeaderSize = 2;
 static const size_t kLengthFieldSize = 2;
+// NALU + 2个字节表示数据长度
 static const size_t kStapAHeaderSize = kNalHeaderSize + kLengthFieldSize;
 
 static const char* kSpsValidHistogramName = "WebRTC.Video.H264.SpsValid";
@@ -49,12 +57,24 @@ enum SpsValidEvent {
 };
 
 // Bit masks for FU (A and B) indicators.
+//      +---------------+
+//      |0|1|2|3|4|5|6|7|
+//      +-+-+-+-+-+-+-+-+
+//      |F|NRI|  Type   |
+//      +---------------+
+// 分别取& 可以获取相应的数据
 enum NalDefs : uint8_t { kFBit = 0x80, kNriMask = 0x60, kTypeMask = 0x1F };
 
 // Bit masks for FU (A and B) headers.
+//      +---------------+
+//      |0|1|2|3|4|5|6|7|
+//      +-+-+-+-+-+-+-+-+
+//      |S|E|R|  Type   |
+//      +---------------+
 enum FuDefs : uint8_t { kSBit = 0x80, kEBit = 0x40, kRBit = 0x20 };
 
 // TODO(pbos): Avoid parsing this here as well as inside the jitter buffer.
+// 记录StapA每个NALU单元的开始的位置(去除三个字节长度)
 bool ParseStapAStartOffsets(const uint8_t* nalu_ptr,
                             size_t length_remaining,
                             std::vector<size_t>* offsets) {
@@ -63,7 +83,7 @@ bool ParseStapAStartOffsets(const uint8_t* nalu_ptr,
     // Buffer doesn't contain room for additional nalu length.
     if (length_remaining < sizeof(uint16_t))
       return false;
-    // 获取2个字节的NALU长度(包括NALU HDR)
+    // 获取2个字节的NALU长度
     uint16_t nalu_size = ByteReader<uint16_t>::ReadBigEndian(nalu_ptr);
     nalu_ptr += sizeof(uint16_t);
     length_remaining -= sizeof(uint16_t);
@@ -447,6 +467,7 @@ bool RtpDepacketizerH264::Parse(ParsedPayload* parsed_payload,
   length_ = payload_data_length;
   modified_buffer_.reset();
 
+  // 通过rtp包payload的第一个字节获取NALU类型
   uint8_t nal_type = payload_data[0] & kTypeMask;               // 第1个字节的后5位获取nal_unit_type
   parsed_payload->type.Video.codecHeader.H264.nalus_length = 0;
   if (nal_type == H264::NaluType::kFuA) {
@@ -480,7 +501,7 @@ bool RtpDepacketizerH264::ProcessStapAOrSingleNalu(
       &parsed_payload->type.Video.codecHeader.H264;
 
   const uint8_t* nalu_start = payload_data + kNalHeaderSize;  // nalu数据开始的位置
-  const size_t nalu_length = length_ - kNalHeaderSize;        // nalu数据的长度(减去包头)
+  const size_t nalu_length = length_ - kNalHeaderSize;        // nalu数据的长度(减去NALU头)
   uint8_t nal_type = payload_data[0] & kTypeMask;             // 获取nal_type
   std::vector<size_t> nalu_start_offsets;                     // 记录每个NALU数据的开始位置(去掉NALU Size 和 NALU HDR)
   if (nal_type == H264::NaluType::kStapA) {
@@ -490,14 +511,16 @@ bool RtpDepacketizerH264::ProcessStapAOrSingleNalu(
       return false;
     }
 
+    // 处理StapA(组合封包模式)
     if (!ParseStapAStartOffsets(nalu_start, nalu_length, &nalu_start_offsets)) {
       RTC_LOG(LS_ERROR) << "StapA packet with incorrect NALU packet lengths.";
       return false;
     }
 
-    h264_header->packetization_type = kH264StapA;         // 设置类型为H264 StapA
+    h264_header->packetization_type = kH264StapA;           // 设置类型为H264 StapA
     nal_type = payload_data[kStapAHeaderSize] & kTypeMask;
   } else {
+    // 单个NALU
     h264_header->packetization_type = kH264SingleNalu;
     nalu_start_offsets.push_back(0);
   }
@@ -649,16 +672,23 @@ bool RtpDepacketizerH264::ProcessStapAOrSingleNalu(
   return true;
 }
 
+// 解析分片封包模式(28、29)
 bool RtpDepacketizerH264::ParseFuaNalu(
     RtpDepacketizer::ParsedPayload* parsed_payload,
     const uint8_t* payload_data) {
+  
+  // 2个字节 FU indicator +  FU header
   if (length_ < kFuAHeaderSize) {
     RTC_LOG(LS_ERROR) << "FU-A NAL units truncated.";
     return false;
   }
+  // NALU 类型获取
   uint8_t fnri = payload_data[0] & (kFBit | kNriMask);
+
   uint8_t original_nal_type = payload_data[1] & kTypeMask;
+  // 是不是为第一个rtp包
   bool first_fragment = (payload_data[1] & kSBit) > 0;
+
   NaluInfo nalu;
   nalu.type = original_nal_type;
   nalu.sps_id = -1;
